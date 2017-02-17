@@ -14,9 +14,8 @@ class MainActivity : AppCompatActivity() {
     val FEED_SOURCES_KEY = "FEED_LIST"
     val FIRST_LAUNCH_KEY = "FIRST_LAUNCH"
 
-    // these two characters are not (officially) allowed in a URL and are therefore good separators
-    val titleSeparator = "^"
-    val entrySeparator = "§"
+    // this character is not (officially) allowed in a URL and is therefore a good separator
+    val separator = "§"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,20 +32,18 @@ class MainActivity : AppCompatActivity() {
         if (firstLaunch) {
             // if it's the first launch, preset some default sources
             val sourceEditor = feedSourcePrefs.edit()
-            // The titles are hardcoded here, but when a user adds a feed source,
-            // the title will be retrieved from the feed's XML (channel->title tag)
             val defaultSourceList = arrayListOf(
-                    "BBC News - World" + titleSeparator + "http://feeds.bbci.co.uk/news/world/rss.xml",
-                    "BBC News - Technology" + titleSeparator + "http://feeds.bbci.co.uk/news/technology/rss.xml",
-                    "CNN.com - RSS Channel - Intl Homepage - News" + titleSeparator + "http://rss.cnn.com/rss/edition.rss")
+                    "http://feeds.bbci.co.uk/news/world/rss.xml",
+                    "http://feeds.bbci.co.uk/news/technology/rss.xml",
+                    "http://rss.cnn.com/rss/edition.rss")
 
             // Put the default list together for storage
-            feedSourceString = defaultSourceList.joinToString { entrySeparator }
+            feedSourceString = defaultSourceList.joinToString(separator)
 
             // store it
             sourceEditor.putString(FEED_SOURCES_KEY, feedSourceString)
+            sourceEditor.putBoolean(FIRST_LAUNCH_KEY, false) // first launch is over
             sourceEditor.apply()
-
 
         } else {
             // retrieve the stored list from the prefs
@@ -54,10 +51,12 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (!feedSourceString.isEmpty()) {
-            // split string containing all sources, then add them to the list
+            // split string containing all sources, then add them to a list
             // which will be passed over to the Asynctask retrieving the feeds
-            val rawSources = feedSourceString.split(entrySeparator)
+            val rawSources = feedSourceString.split(separator)
             val sourceList = rawSources.map(::URL) // maps elements to ArrayList<URL>
+
+            // TODO pass URLs to adapter
         }
     }
 
