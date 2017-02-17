@@ -1,6 +1,8 @@
 package aenadon.simplerssfeed
 
+import android.app.ProgressDialog
 import android.content.Context
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
@@ -8,6 +10,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
 import java.net.URL
+import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
@@ -57,9 +60,9 @@ class MainActivity : AppCompatActivity() {
             val rawSources = feedSourceString.split(separator)
             val sourceList = rawSources.map(::URL) // maps elements to ArrayList<URL>
 
-            // TODO pass URLs to adapter
+            GetXML(this@MainActivity, sourceList.size).execute(sourceList)
         } else {
-            Toast.makeText(this, getString(R.string.no_sources), Toast.LENGTH_LONG).show()
+            Toast.makeText(this@MainActivity, getString(R.string.no_sources), Toast.LENGTH_LONG).show()
         }
     }
 
@@ -74,12 +77,50 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
-
+        // TODO make settings to set RSS sources
 
         if (id == R.id.action_settings) {
             return true
         }
 
         return super.onOptionsItemSelected(item)
+    }
+
+    class GetXML(val ctx: Context, val listSize: Int) : AsyncTask<List<URL>, Int, List<XMLItem>>() {
+
+        val LOG_TAG: String = GetXML::class.java.simpleName
+
+        val waitingProgressDialog = ProgressDialog(ctx)
+
+        override fun onPreExecute() {
+            super.onPreExecute()
+            waitingProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
+            waitingProgressDialog.max = listSize
+            waitingProgressDialog.setTitle(ctx.getString(R.string.retrieving_news))
+            waitingProgressDialog.show()
+            waitingProgressDialog.setCancelable(false)
+        }
+
+        override fun doInBackground(vararg params: List<URL>?): List<XMLItem> {
+            for (i in 0..listSize) {
+                Thread.sleep(5000)
+                publishProgress(i)
+            }
+            return ArrayList<XMLItem>()
+        }
+
+        override fun onProgressUpdate(vararg values: Int?) {
+            super.onProgressUpdate(*values)
+            if (values.isNotEmpty()) {
+                val progress = values[0]
+                if (progress != null) waitingProgressDialog.progress = progress
+            }
+        }
+
+        override fun onPostExecute(result: List<XMLItem>?) {
+            super.onPostExecute(result)
+            waitingProgressDialog.dismiss()
+        }
+
     }
 }
