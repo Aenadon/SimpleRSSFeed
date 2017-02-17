@@ -6,14 +6,14 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
-import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
-import okhttp3.OkHttpClient
-import okhttp3.Request
+import com.rometools.rome.io.SyndFeedInput
+import com.rometools.rome.io.XmlReader
 import java.net.URL
 import java.util.*
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -110,20 +110,24 @@ class MainActivity : AppCompatActivity() {
             }
 
             val urlList = params[0] ?: throw Error("GetXML Asynctask doInBackground params[0] is empty!")
-            val entryList: List<XMLItem> = ArrayList<XMLItem>()
+            val entryList: ArrayList<XMLItem> = ArrayList()
 
-            val netLoader = OkHttpClient()
             var progress = 1
-            for (url in urlList) {
-                val request = Request.Builder()
-                        .url(url)
-                        .build()
 
-                val response = netLoader.newCall(request).execute()
-                Log.i(LOG_TAG, response.body().string().substring(0, 50)) // TODO fix
+            for (url in urlList) {
+                val feed = SyndFeedInput().build(XmlReader(url))
+
+                feed.entries.mapTo(entryList) {
+                    XMLItem(
+                            feed.title ?: "",
+                            it.title ?: "",
+                            URL(it.link),
+                            it.description?.value ?: ""
+                    )
+                }
                 publishProgress(progress++)
             }
-            return ArrayList<XMLItem>()
+            return entryList
         }
 
         override fun onProgressUpdate(vararg values: Int?) {
@@ -135,6 +139,10 @@ class MainActivity : AppCompatActivity() {
         override fun onPostExecute(result: List<XMLItem>?) {
             super.onPostExecute(result)
             waitingProgressDialog.dismiss()
+
+            if (result != null && result.isNotEmpty()) {
+                result.toString()
+            }
         }
 
     }

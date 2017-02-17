@@ -1,5 +1,13 @@
 package aenadon.simplerssfeed
 
-class XMLItem {
+import java.net.URL
+
+// Holds the XML news elements to be displayed
+
+data class XMLItem(
+        val channelTitle: String,
+        val newsTitle: String,
+        val newsLink: URL,
+        val newsDescription: String) {
 
 }
