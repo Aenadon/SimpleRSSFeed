@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import java.net.URL
 
 class MainActivity : AppCompatActivity() {
@@ -57,6 +58,8 @@ class MainActivity : AppCompatActivity() {
             val sourceList = rawSources.map(::URL) // maps elements to ArrayList<URL>
 
             // TODO pass URLs to adapter
+        } else {
+            Toast.makeText(this, getString(R.string.no_sources), Toast.LENGTH_LONG).show()
         }
     }
 
