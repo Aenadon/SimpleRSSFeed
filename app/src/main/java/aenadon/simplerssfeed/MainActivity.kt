@@ -6,9 +6,12 @@ import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
+import okhttp3.OkHttpClient
+import okhttp3.Request
 import java.net.URL
 import java.util.*
 
@@ -102,19 +105,31 @@ class MainActivity : AppCompatActivity() {
         }
 
         override fun doInBackground(vararg params: List<URL>?): List<XMLItem> {
-            for (i in 0..listSize) {
-                Thread.sleep(5000)
-                publishProgress(i)
+            if (params.isEmpty()) {
+                throw Error("GetXML Asynctask doInBackground params is empty!")
+            }
+
+            val urlList = params[0] ?: throw Error("GetXML Asynctask doInBackground params[0] is empty!")
+            val entryList: List<XMLItem> = ArrayList<XMLItem>()
+
+            val netLoader = OkHttpClient()
+            var progress = 1
+            for (url in urlList) {
+                val request = Request.Builder()
+                        .url(url)
+                        .build()
+
+                val response = netLoader.newCall(request).execute()
+                Log.i(LOG_TAG, response.body().string().substring(0, 50)) // TODO fix
+                publishProgress(progress++)
             }
             return ArrayList<XMLItem>()
         }
 
         override fun onProgressUpdate(vararg values: Int?) {
             super.onProgressUpdate(*values)
-            if (values.isNotEmpty()) {
-                val progress = values[0]
-                if (progress != null) waitingProgressDialog.progress = progress
-            }
+            val progress = values[0]
+            if (progress != null) waitingProgressDialog.progress = progress
         }
 
         override fun onPostExecute(result: List<XMLItem>?) {
