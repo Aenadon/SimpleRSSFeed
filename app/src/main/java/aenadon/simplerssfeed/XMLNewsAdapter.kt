@@ -54,6 +54,7 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
             // if string is larger than 140, truncate it and add … (does not happen often)
         }
 
+        // Assign the news item contents to the respective TextViews
         viewHolder.title.text = newsList[position].newsTitle
         viewHolder.description.text = slicedDescription
         viewHolder.channelName.text = newsList[position].channelName
@@ -64,6 +65,7 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
 
 
     // This is the class that will hold the view IDs
+    // inside XMLNewsAdapter because it's never used outside
     data class ViewHolder(var title: TextView, var description: TextView, var channelName: TextView, var dateText: TextView)
 
 }
