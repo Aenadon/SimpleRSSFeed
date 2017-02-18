@@ -3,6 +3,7 @@ package aenadon.simplerssfeed
 import android.content.Context
 import android.content.SharedPreferences
 import java.net.URL
+import java.util.*
 
 class SharedPrefHelper(val ctx: Context) {
     val FEED_SOURCES_FILENAME = "FEED_SOURCES"
@@ -47,5 +48,11 @@ class SharedPrefHelper(val ctx: Context) {
         sourceEditor.apply()
 
         return defaultSourceList.map(::URL) // return URL list
+    }
+
+    fun updateSourceList(feedSources: ArrayList<String>) {
+        val editor = prefs.edit()
+        editor.putString(FEED_SOURCES_KEY, feedSources.joinToString(separator))
+        editor.apply()
     }
 }

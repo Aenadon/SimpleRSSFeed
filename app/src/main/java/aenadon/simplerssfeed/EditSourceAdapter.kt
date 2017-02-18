@@ -7,10 +7,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import java.util.*
 
-class EditSourceAdapter(val ctx: Context, val sourceList: List<String>) : BaseAdapter() {
+class EditSourceAdapter(val ctx: Context, val sourceList: ArrayList<String>) : BaseAdapter() {
 
-    override fun getItem(position: Int): Any {
+    override fun getItem(position: Int): String {
         return sourceList[position]
     }
 

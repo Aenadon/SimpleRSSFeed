@@ -6,6 +6,9 @@
     <string name="add_source">Add source</string>
     <string name="delete_source">Delete</string>
 
+    <string name="message_deleting_source_title">Deleting source</string>
+    <string name="message_deleting_source_text" formatted="false">Are you sure you want to delete %s from your list?</string>
+
     <string name="retrieving_news">Retrieving news&#8230;</string>
 
 
