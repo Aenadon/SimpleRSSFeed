@@ -3,6 +3,8 @@ package aenadon.simplerssfeed
 import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
+import android.content.Intent
+import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v7.app.AppCompatActivity
@@ -147,7 +149,18 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             val feedList = (ctx as Activity).findViewById(R.id.content_main) as ListView
-            feedList.adapter = XMLNewsAdapter(result, ctx)
+            val newsAdapter = XMLNewsAdapter(result, ctx)
+            feedList.adapter = newsAdapter
+            feedList.setOnItemClickListener {
+                adapterView, view, position, rowId ->
+                val url: URL = (feedList.getItemAtPosition(position) as XMLItem).newsLink
+
+                val openBrowser: Intent = Intent(Intent.ACTION_VIEW)
+                // as we have a correctly formed URL, the conversion to URI should be no problem
+                openBrowser.data = Uri.parse(url.toString())
+                ctx.startActivity(openBrowser)
+            }
+
         }
 
     }

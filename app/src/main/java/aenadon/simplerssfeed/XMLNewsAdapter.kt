@@ -1,5 +1,6 @@
 package aenadon.simplerssfeed
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -29,6 +30,7 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
         val inflater = ctx.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
 
         if (displayView == null) {
+            @SuppressLint("InflateParams") // specifying "parent" causes crash
             displayView = inflater.inflate(R.layout.list_item, null)
             viewHolder = ViewHolder(
                     displayView.findViewById(R.id.list_item_title) as TextView,
@@ -41,10 +43,18 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
             viewHolder = displayView.tag as ViewHolder
         }
 
-        viewHolder.title.text = newsList[position].newsTitle
-        viewHolder.description.text = newsList[position].newsDescription
-        viewHolder.channelName.text = newsList[position].channelName
+        val newsDescription = newsList[position].newsDescription
+        val slicedDescription: String
+        if (newsDescription.length <= 140) {
+            slicedDescription = newsDescription // if string is already 140, don't slice it
+        } else {
+            slicedDescription = newsDescription.substring(0, 140) + "…" // &#8230;
+            // if string is larger than 140, truncate it and add … (does not happen often)
+        }
 
+        viewHolder.title.text = newsList[position].newsTitle
+        viewHolder.description.text = slicedDescription
+        viewHolder.channelName.text = newsList[position].channelName
 
         return displayView!! // displayView will be definitely initialized by now, so we can use !!
     }
