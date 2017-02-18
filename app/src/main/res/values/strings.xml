@@ -2,6 +2,10 @@
     <string name="app_name">Simple RSS Feed</string>
     <string name="action_edit_sources">Edit sources</string>
 
+    <string name="source_list">Source list</string>
+    <string name="add_source">Add source</string>
+    <string name="delete_source">Delete</string>
+
     <string name="retrieving_news">Retrieving news&#8230;</string>
 
 

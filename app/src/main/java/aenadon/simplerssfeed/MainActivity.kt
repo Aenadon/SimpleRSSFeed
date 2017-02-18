@@ -116,9 +116,9 @@ class MainActivity : AppCompatActivity() {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         val id = item.itemId
-        // TODO make settings to set RSS sources
 
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_edit_sources) {
+            startActivity(Intent(this@MainActivity, EditSourceActivity::class.java))
             return true
         }
 

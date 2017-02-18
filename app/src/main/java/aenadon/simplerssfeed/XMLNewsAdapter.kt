@@ -32,7 +32,7 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
 
         if (displayView == null) {
             @SuppressLint("InflateParams") // specifying "parent" causes crash
-            displayView = inflater.inflate(R.layout.list_item, null)
+            displayView = inflater.inflate(R.layout.news_list_item, null)
             viewHolder = ViewHolder( // initialize the views in ViewHolder
                     displayView.findViewById(R.id.list_item_title) as TextView,
                     displayView.findViewById(R.id.list_item_description) as TextView,
