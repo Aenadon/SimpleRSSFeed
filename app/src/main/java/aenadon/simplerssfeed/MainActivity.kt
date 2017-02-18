@@ -1,9 +1,9 @@
 package aenadon.simplerssfeed
 
-import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -28,49 +28,74 @@ class MainActivity : AppCompatActivity() {
     // this character is not (officially) allowed in a URL and is therefore a good separator
     val separator = "§"
 
+    lateinit var feedList: ListView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         val toolbar = findViewById(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
 
-        // get saved list of sources
-        val feedSourcePrefs = this.getSharedPreferences(FEED_SOURCES_FILENAME, Context.MODE_PRIVATE)
-        val firstLaunch = feedSourcePrefs.getBoolean(FIRST_LAUNCH_KEY, true)
+        feedList = findViewById(aenadon.simplerssfeed.R.id.content_main) as ListView
 
-        val feedSourceString: String
 
-        if (firstLaunch) {
-            // if it's the first launch, preset some default sources
-            val sourceEditor = feedSourcePrefs.edit()
-            val defaultSourceList = arrayListOf(
-                    "http://feeds.bbci.co.uk/news/world/rss.xml",
-                    "http://feeds.bbci.co.uk/news/technology/rss.xml",
-                    "http://rss.cnn.com/rss/edition.rss")
-
-            // Put the default list together for storage
-            feedSourceString = defaultSourceList.joinToString(separator)
-
-            // store it
-            sourceEditor.putString(FEED_SOURCES_KEY, feedSourceString)
-            sourceEditor.putBoolean(FIRST_LAUNCH_KEY, false) // first launch is over
-            sourceEditor.apply()
-
+        if (lastCustomNonConfigurationInstance != null) {
+            // if it was just an orientation change, set the old adapter+clicklistener again
+            val oldObjects = lastCustomNonConfigurationInstance as ListViewPersistence
+            feedList.adapter = oldObjects.newsAdapter
+            feedList.onItemClickListener = oldObjects.clickListener
         } else {
-            // retrieve the stored list from the prefs
-            feedSourceString = feedSourcePrefs.getString(FEED_SOURCES_KEY, "")
-        }
+            // if it was more than an orientation change, go through all the steps needed
+            // get saved list of sources
+            val feedSourcePrefs = this.getSharedPreferences(FEED_SOURCES_FILENAME, Context.MODE_PRIVATE)
+            val firstLaunch = feedSourcePrefs.getBoolean(FIRST_LAUNCH_KEY, true)
 
-        if (!feedSourceString.isEmpty()) {
-            // split string containing all sources, then add them to a list
-            // which will be passed over to the Asynctask retrieving the feeds
-            val rawSources = feedSourceString.split(separator)
-            val sourceList = rawSources.map(::URL) // maps elements to ArrayList<URL>
+            val feedSourceString: String
 
-            GetXML(this@MainActivity, sourceList.size).execute(sourceList)
-        } else {
-            Toast.makeText(this@MainActivity, getString(R.string.no_sources), Toast.LENGTH_LONG).show()
+            if (firstLaunch) {
+                // preset the sources
+                feedSourceString = presetSources(feedSourcePrefs)
+            } else {
+                // retrieve the stored list from the prefs
+                feedSourceString = feedSourcePrefs.getString(FEED_SOURCES_KEY, "")
+            }
+
+            if (!feedSourceString.isEmpty()) {
+                // split string containing all sources, then add them to a list
+                // which will be passed over to the Asynctask retrieving the feeds
+                val rawSources = feedSourceString.split(separator)
+                val sourceList = rawSources.map(::URL) // maps elements to ArrayList<URL>
+
+                GetXML(this@MainActivity, sourceList.size, feedList).execute(sourceList)
+            } else {
+                Toast.makeText(this@MainActivity, getString(R.string.no_sources), Toast.LENGTH_LONG).show()
+            }
         }
+    }
+
+    fun presetSources(feedSourcePrefs: SharedPreferences): String {
+        // if it's the first launch, preset some default sources
+        val sourceEditor = feedSourcePrefs.edit()
+        val defaultSourceList = arrayListOf(
+                "http://feeds.bbci.co.uk/news/world/rss.xml",
+                "http://feeds.bbci.co.uk/news/technology/rss.xml"/*,
+                "http://rss.cnn.com/rss/edition.rss"*/) // TODO disabled for debugging, it takes too long to load
+
+        // Put the default list together for storage
+        val feedSourceString = defaultSourceList.joinToString(separator)
+
+        // store it
+        sourceEditor.putString(FEED_SOURCES_KEY, feedSourceString)
+        sourceEditor.putBoolean(FIRST_LAUNCH_KEY, false) // first launch is over
+        sourceEditor.apply()
+
+        return feedSourceString
+    }
+
+    override fun onRetainCustomNonConfigurationInstance(): ListViewPersistence? {
+        // return an object containing the adapter and OnItemClickListener
+        // so we can apply these back to the feedList
+        return ListViewPersistence(feedList.adapter as XMLNewsAdapter, feedList.onItemClickListener)
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -93,9 +118,7 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
-    class GetXML(val ctx: Context, val listSize: Int) : AsyncTask<List<URL>, Int, List<XMLItem>>() {
-
-        val LOG_TAG: String = GetXML::class.java.simpleName
+    class GetXML(val ctx: Context, val listSize: Int, val feedList: ListView) : AsyncTask<List<URL>, Int, List<XMLItem>>() {
 
         val waitingProgressDialog = ProgressDialog(ctx)
 
@@ -148,11 +171,10 @@ class MainActivity : AppCompatActivity() {
             if (result == null || result.isEmpty()) {
                 return
             }
-            val feedList = (ctx as Activity).findViewById(R.id.content_main) as ListView
             val newsAdapter = XMLNewsAdapter(result, ctx)
             feedList.adapter = newsAdapter
-            feedList.setOnItemClickListener {
-                adapterView, view, position, rowId ->
+            feedList.setOnItemClickListener { adapterView, view, position, rowId ->
+
                 val url: URL = (feedList.getItemAtPosition(position) as XMLItem).newsLink
 
                 val openBrowser: Intent = Intent(Intent.ACTION_VIEW)
