@@ -150,10 +150,12 @@ class MainActivity : AppCompatActivity() {
                             feed.title,
                             it.title,
                             URL(it.link),
-                            it.description?.value ?: "" // can be null apparently!!!
+                            it.description?.value ?: "", // can be null apparently!!!
+                            it.publishedDate ?: Date() // if date is not specified, say "now"
                     )
                 }
-                publishProgress(progress++)
+                Collections.sort(entryList, Collections.reverseOrder()) // sort list after date but reversed (newest at top)
+                publishProgress(progress++) // we've finished 1 more
             }
             return entryList
         }

@@ -42,6 +42,15 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:id="@+id/list_item_date"
+        android:text="[Date]"
+        android:textStyle="italic"
+        android:gravity="center"
+        android:layout_margin="2dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
         android:id="@+id/list_item_channel_name"
         android:text="[News Channel]"
         android:textStyle="bold"

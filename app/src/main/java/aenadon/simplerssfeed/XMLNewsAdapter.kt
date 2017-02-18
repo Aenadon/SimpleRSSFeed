@@ -7,6 +7,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.BaseAdapter
 import android.widget.TextView
+import java.text.DateFormat
 
 
 class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapter() {
@@ -35,7 +36,8 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
             viewHolder = ViewHolder(
                     displayView.findViewById(R.id.list_item_title) as TextView,
                     displayView.findViewById(R.id.list_item_description) as TextView,
-                    displayView.findViewById(R.id.list_item_channel_name) as TextView
+                    displayView.findViewById(R.id.list_item_channel_name) as TextView,
+                    displayView.findViewById(R.id.list_item_date) as TextView
             )
 
             displayView.tag = viewHolder
@@ -55,12 +57,13 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
         viewHolder.title.text = newsList[position].newsTitle
         viewHolder.description.text = slicedDescription
         viewHolder.channelName.text = newsList[position].channelName
+        viewHolder.dateText.text = DateFormat.getDateTimeInstance().format(newsList[position].date)
 
         return displayView!! // displayView will be definitely initialized by now, so we can use !!
     }
 
 
     // This is the class that will hold the view IDs
-    data class ViewHolder(var title: TextView, var description: TextView, var channelName: TextView)
+    data class ViewHolder(var title: TextView, var description: TextView, var channelName: TextView, var dateText: TextView)
 
 }
