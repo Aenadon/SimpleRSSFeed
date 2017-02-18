@@ -1,5 +1,6 @@
 package aenadon.simplerssfeed
 
+import android.app.Activity
 import android.app.ProgressDialog
 import android.content.Context
 import android.os.AsyncTask
@@ -8,6 +9,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.ListView
 import android.widget.Toast
 import com.rometools.rome.io.SyndFeedInput
 import com.rometools.rome.io.XmlReader
@@ -115,14 +117,15 @@ class MainActivity : AppCompatActivity() {
             var progress = 1
 
             for (url in urlList) {
-                val feed = SyndFeedInput().build(XmlReader(url))
+                val feed = SyndFeedInput().build(XmlReader(url)) // get XML to object
 
+                // pick the needed info out of the object
                 feed.entries.mapTo(entryList) {
                     XMLItem(
-                            feed.title ?: "",
-                            it.title ?: "",
+                            feed.title,
+                            it.title,
                             URL(it.link),
-                            it.description?.value ?: ""
+                            it.description?.value ?: "" // can be null apparently!!!
                     )
                 }
                 publishProgress(progress++)
@@ -140,9 +143,11 @@ class MainActivity : AppCompatActivity() {
             super.onPostExecute(result)
             waitingProgressDialog.dismiss()
 
-            if (result != null && result.isNotEmpty()) {
-                result.toString()
+            if (result == null || result.isEmpty()) {
+                return
             }
+            val feedList = (ctx as Activity).findViewById(R.id.content_main) as ListView
+            feedList.adapter = XMLNewsAdapter(result, ctx)
         }
 
     }
