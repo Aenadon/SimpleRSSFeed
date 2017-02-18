@@ -13,7 +13,7 @@ import java.text.DateFormat
 class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapter() {
 
     override fun getItem(position: Int): XMLItem {
-        return newsList[position]
+        return newsList[position] // return the corresponding XMLItem from the list
     }
 
     override fun getItemId(position: Int): Long {
@@ -33,7 +33,7 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
         if (displayView == null) {
             @SuppressLint("InflateParams") // specifying "parent" causes crash
             displayView = inflater.inflate(R.layout.list_item, null)
-            viewHolder = ViewHolder(
+            viewHolder = ViewHolder( // initialize the views in ViewHolder
                     displayView.findViewById(R.id.list_item_title) as TextView,
                     displayView.findViewById(R.id.list_item_description) as TextView,
                     displayView.findViewById(R.id.list_item_channel_name) as TextView,
@@ -44,6 +44,8 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
         } else {
             viewHolder = displayView.tag as ViewHolder
         }
+
+        // Parse description to stay below 140 characters
 
         val newsDescription = newsList[position].newsDescription
         val slicedDescription: String

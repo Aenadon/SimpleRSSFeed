@@ -1,7 +1,14 @@
 <resources>
     <string name="app_name">Simple RSS Feed</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_edit_sources">Edit sources</string>
 
-    <string name="no_sources">No sources found!</string>
     <string name="retrieving_news">Retrieving news&#8230;</string>
+
+
+    <string name="message_no_sources_title">No sources available</string>
+    <string name="message_no_sources_text">You haven\'t specified any RSS source. Please specify
+    some sources using the menu above.</string>
+    <string name="message_no_news_title">No news available</string>
+    <string name="message_no_news_text">The sources you have specified have returned no news.
+    Please try again later or add more sources.</string>
 </resources>

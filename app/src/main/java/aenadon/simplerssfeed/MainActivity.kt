@@ -7,6 +7,7 @@ import android.content.SharedPreferences
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
+import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.Menu
@@ -53,7 +54,7 @@ class MainActivity : AppCompatActivity() {
             val feedSourceString: String
 
             if (firstLaunch) {
-                // preset the sources
+                // if it's the first launch, preset some default sources
                 feedSourceString = presetSources(feedSourcePrefs)
             } else {
                 // retrieve the stored list from the prefs
@@ -68,13 +69,19 @@ class MainActivity : AppCompatActivity() {
 
                 GetXML(this@MainActivity, sourceList.size, feedList).execute(sourceList)
             } else {
-                Toast.makeText(this@MainActivity, getString(R.string.no_sources), Toast.LENGTH_LONG).show()
+                // if no sources specified, no need to do anything except informing the user
+                Toast.makeText(this@MainActivity, getString(R.string.message_no_sources_title), Toast.LENGTH_LONG).show()
+
+                AlertDialog.Builder(this)
+                        .setTitle(getString(R.string.message_no_news_title))
+                        .setMessage(getString(R.string.message_no_news_text))
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show()
             }
         }
     }
 
     fun presetSources(feedSourcePrefs: SharedPreferences): String {
-        // if it's the first launch, preset some default sources
         val sourceEditor = feedSourcePrefs.edit()
         val defaultSourceList = arrayListOf(
                 "http://feeds.bbci.co.uk/news/world/rss.xml",
@@ -94,7 +101,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onRetainCustomNonConfigurationInstance(): ListViewPersistence? {
         // return an object containing the adapter and OnItemClickListener
-        // so we can apply these back to the feedList
+        // so we can apply these back to the feedList after orientation change
         return ListViewPersistence(feedList.adapter as XMLNewsAdapter, feedList.onItemClickListener)
     }
 
@@ -120,6 +127,7 @@ class MainActivity : AppCompatActivity() {
 
     class GetXML(val ctx: Context, val listSize: Int, val feedList: ListView) : AsyncTask<List<URL>, Int, List<XMLItem>>() {
 
+        // This is the dialog showing the progress during the loading operation
         val waitingProgressDialog = ProgressDialog(ctx)
 
         override fun onPreExecute() {
@@ -127,17 +135,19 @@ class MainActivity : AppCompatActivity() {
             waitingProgressDialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL)
             waitingProgressDialog.max = listSize
             waitingProgressDialog.setTitle(ctx.getString(R.string.retrieving_news))
-            waitingProgressDialog.show()
             waitingProgressDialog.setCancelable(false)
+            waitingProgressDialog.show()
         }
 
         override fun doInBackground(vararg params: List<URL>?): List<XMLItem> {
             if (params.isEmpty()) {
+                // GetXML is only initialized in one place with the parameter given
                 throw Error("GetXML Asynctask doInBackground params is empty!")
             }
 
+            // Should never happen, this is being prevented before GetXML initialization
             val urlList = params[0] ?: throw Error("GetXML Asynctask doInBackground params[0] is empty!")
-            val entryList: ArrayList<XMLItem> = ArrayList()
+            val entryList: ArrayList<XMLItem> = ArrayList() // list holding the news items
 
             var progress = 1
 
@@ -155,7 +165,7 @@ class MainActivity : AppCompatActivity() {
                     )
                 }
                 Collections.sort(entryList, Collections.reverseOrder()) // sort list after date but reversed (newest at top)
-                publishProgress(progress++) // we've finished 1 more
+                publishProgress(progress++) // publish current progress count, then increment
             }
             return entryList
         }
@@ -163,20 +173,29 @@ class MainActivity : AppCompatActivity() {
         override fun onProgressUpdate(vararg values: Int?) {
             super.onProgressUpdate(*values)
             val progress = values[0]
-            if (progress != null) waitingProgressDialog.progress = progress
+            if (progress != null) waitingProgressDialog.progress = progress // put current progress on screen
         }
 
         override fun onPostExecute(result: List<XMLItem>?) {
             super.onPostExecute(result)
             waitingProgressDialog.dismiss()
 
-            if (result == null || result.isEmpty()) {
+            if (result == null) {
+                // Can not happen
+                throw Error("doInBackground result empty")
+            } else if (result.isEmpty()) {
+                // this can only happen if all specified sources have no news at all
+                AlertDialog.Builder(ctx)
+                        .setTitle(ctx.getString(R.string.message_no_news_title))
+                        .setMessage(ctx.getString(R.string.message_no_news_text))
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show()
                 return
             }
             val newsAdapter = XMLNewsAdapter(result, ctx)
             feedList.adapter = newsAdapter
             feedList.setOnItemClickListener { adapterView, view, position, rowId ->
-
+                // on click, open the corresponding URL
                 val url: URL = (feedList.getItemAtPosition(position) as XMLItem).newsLink
 
                 val openBrowser: Intent = Intent(Intent.ACTION_VIEW)
