@@ -18,6 +18,7 @@
         android:text="@string/source_list"/>
 
     <ListView
+        android:id="@+id/source_editor_list"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@id/source_editor_title"/>

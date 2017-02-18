@@ -3,7 +3,6 @@ package aenadon.simplerssfeed
 import android.app.ProgressDialog
 import android.content.Context
 import android.content.Intent
-import android.content.SharedPreferences
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -22,13 +21,6 @@ import java.util.*
 
 class MainActivity : AppCompatActivity() {
 
-    val FEED_SOURCES_FILENAME = "FEED_SOURCES"
-    val FEED_SOURCES_KEY = "FEED_LIST"
-    val FIRST_LAUNCH_KEY = "FIRST_LAUNCH"
-
-    // this character is not (officially) allowed in a URL and is therefore a good separator
-    val separator = "§"
-
     lateinit var feedList: ListView
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +31,7 @@ class MainActivity : AppCompatActivity() {
 
         feedList = findViewById(aenadon.simplerssfeed.R.id.content_main) as ListView
 
+        val sharedPrefHelper = SharedPrefHelper(this@MainActivity)
 
         if (lastCustomNonConfigurationInstance != null) {
             // if it was just an orientation change, set the old adapter+clicklistener again
@@ -46,28 +39,12 @@ class MainActivity : AppCompatActivity() {
             feedList.adapter = oldObjects.newsAdapter
             feedList.onItemClickListener = oldObjects.clickListener
         } else {
-            // if it was more than an orientation change, go through all the steps needed
-            // get saved list of sources
-            val feedSourcePrefs = this.getSharedPreferences(FEED_SOURCES_FILENAME, Context.MODE_PRIVATE)
-            val firstLaunch = feedSourcePrefs.getBoolean(FIRST_LAUNCH_KEY, true)
+            // if it was more than an orientation change, go through
+            // all the steps needed to get saved list of sources
+            val feedSources = sharedPrefHelper.getSourcesFromPrefs()
 
-            val feedSourceString: String
-
-            if (firstLaunch) {
-                // if it's the first launch, preset some default sources
-                feedSourceString = presetSources(feedSourcePrefs)
-            } else {
-                // retrieve the stored list from the prefs
-                feedSourceString = feedSourcePrefs.getString(FEED_SOURCES_KEY, "")
-            }
-
-            if (!feedSourceString.isEmpty()) {
-                // split string containing all sources, then add them to a list
-                // which will be passed over to the Asynctask retrieving the feeds
-                val rawSources = feedSourceString.split(separator)
-                val sourceList = rawSources.map(::URL) // maps elements to ArrayList<URL>
-
-                GetXML(this@MainActivity, sourceList.size, feedList).execute(sourceList)
+            if (feedSources.isNotEmpty()) {
+                GetXML(this@MainActivity, feedSources.size, feedList).execute(feedSources)
             } else {
                 // if no sources specified, no need to do anything except informing the user
                 Toast.makeText(this@MainActivity, getString(R.string.message_no_sources_title), Toast.LENGTH_LONG).show()
@@ -79,24 +56,6 @@ class MainActivity : AppCompatActivity() {
                         .show()
             }
         }
-    }
-
-    fun presetSources(feedSourcePrefs: SharedPreferences): String {
-        val sourceEditor = feedSourcePrefs.edit()
-        val defaultSourceList = arrayListOf(
-                "http://feeds.bbci.co.uk/news/world/rss.xml",
-                "http://feeds.bbci.co.uk/news/technology/rss.xml"/*,
-                "http://rss.cnn.com/rss/edition.rss"*/) // TODO disabled for debugging, it takes too long to load
-
-        // Put the default list together for storage
-        val feedSourceString = defaultSourceList.joinToString(separator)
-
-        // store it
-        sourceEditor.putString(FEED_SOURCES_KEY, feedSourceString)
-        sourceEditor.putBoolean(FIRST_LAUNCH_KEY, false) // first launch is over
-        sourceEditor.apply()
-
-        return feedSourceString
     }
 
     override fun onRetainCustomNonConfigurationInstance(): ListViewPersistence? {
