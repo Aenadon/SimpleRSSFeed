@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity
 import android.support.v7.widget.Toolbar
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.AdapterView
 import android.widget.ListView
 import android.widget.Toast
 import com.rometools.rome.io.SyndFeedInput
@@ -201,4 +202,8 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+    // These two need to be persisted on orientation change to ensure
+    // that the list doesn't need to reload all the news
+    data class ListViewPersistence(val newsAdapter: XMLNewsAdapter, val clickListener: AdapterView.OnItemClickListener)
 }

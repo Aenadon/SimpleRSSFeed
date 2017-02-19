@@ -67,7 +67,6 @@ class XMLNewsAdapter(val newsList: List<XMLItem>, val ctx: Context) : BaseAdapte
 
 
     // This is the class that will hold the view IDs
-    // inside XMLNewsAdapter because it's never used outside
     data class ViewHolder(var title: TextView, var description: TextView, var channelName: TextView, var dateText: TextView)
 
 }
