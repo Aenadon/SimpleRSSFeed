@@ -36,8 +36,8 @@ class SharedPrefHelper(ctx: Context) {
         val sourceEditor = prefs.edit()
         val defaultSourceList = arrayListOf(
                 "http://feeds.bbci.co.uk/news/world/rss.xml",
-                "http://feeds.bbci.co.uk/news/technology/rss.xml"/*,
-                "http://rss.cnn.com/rss/edition.rss"*/) // TODO disabled for debugging, it takes too long to load
+                "http://feeds.bbci.co.uk/news/technology/rss.xml",
+                "http://rss.cnn.com/rss/edition.rss")
 
         // Put the default list together for storage
         val feedSourceString = defaultSourceList.joinToString(separator)
