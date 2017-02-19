@@ -10,7 +10,7 @@ SSH: `git clone git@github.com:Aenadon/SimpleRSSFeed.git`
 
 HTTPS: `git clone https://github.com/Aenadon/SimpleRSSFeed.git`
 
-**To build the app, open a command line inside the root of the project and type:**
+**After that, open a command line inside the root of the project and type:**
 
 Windows: `gradlew assembleRelease`
 
