@@ -6,15 +6,23 @@
     <string name="add_source">Add source</string>
     <string name="delete_source">Delete</string>
 
-    <string name="message_deleting_source_title">Deleting source</string>
-    <string name="message_deleting_source_text" formatted="false">Are you sure you want to delete %s from your list?</string>
+    <string name="enter_url">Enter URL</string>
 
     <string name="retrieving_news">Retrieving news&#8230;</string>
 
+    <string name="message_invalid_url_title">Invalid URL</string>
+    <string name="message_invalid_url_text">Please enter a valid URL.</string>
+
+    <string name="message_invalid_rss_title">Invalid RSS</string>
+    <string name="message_invalid_rss_text">Please only add valid RSS sources.</string>
+
+    <string name="message_deleting_source_title">Deleting source</string>
+    <string name="message_deleting_source_text" formatted="false">Are you sure you want to delete %s from your list?</string>
 
     <string name="message_no_sources_title">No sources available</string>
     <string name="message_no_sources_text">You haven\'t specified any RSS source. Please specify
     some sources using the menu above.</string>
+
     <string name="message_no_news_title">No news available</string>
     <string name="message_no_news_text">The sources you have specified have returned no news.
     Please try again later or add more sources.</string>
