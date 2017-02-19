@@ -55,4 +55,15 @@ class SharedPrefHelper(val ctx: Context) {
         editor.putString(FEED_SOURCES_KEY, feedSources.joinToString(separator))
         editor.apply()
     }
+
+    fun addURLToSourceList(url: URL) { // asking for URL as parameter to prevent unintended unchecked calls
+        var prevSources = prefs.getString(FEED_SOURCES_KEY, "")
+        if (prevSources.isNotEmpty()) {
+            prevSources += separator // if the string is not empty, add the separator now
+        }
+
+        val editor = prefs.edit()
+        editor.putString(FEED_SOURCES_KEY, prevSources + url.toString())
+        editor.apply()
+    }
 }

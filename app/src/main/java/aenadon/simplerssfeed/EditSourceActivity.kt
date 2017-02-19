@@ -1,6 +1,7 @@
 package aenadon.simplerssfeed
 
 import android.content.Context
+import android.content.Intent
 import android.graphics.Color
 import android.os.AsyncTask
 import android.os.Bundle
@@ -17,9 +18,13 @@ import java.net.URL
 import java.text.ParseException
 import java.util.*
 
+
+
 class EditSourceActivity : AppCompatActivity() {
 
     lateinit var sharedPrefHelper: SharedPrefHelper
+
+    lateinit var sourceAdapter: EditSourceAdapter
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +36,7 @@ class EditSourceActivity : AppCompatActivity() {
         // make an arraylist out of our list
         val feedSources: ArrayList<String> = ArrayList(sharedPrefHelper.getSourcesFromPrefs().map(URL::toString))
 
-        val sourceAdapter = EditSourceAdapter(this@EditSourceActivity, feedSources)
+        sourceAdapter = EditSourceAdapter(this@EditSourceActivity, feedSources)
         sourceListView.adapter = sourceAdapter
 
         // ask user if he really wanted deletion, then delete and push to SharedPrefs
@@ -43,10 +48,14 @@ class EditSourceActivity : AppCompatActivity() {
                         feedSources.removeAt(position)
                         sharedPrefHelper.updateSourceList(feedSources)
                         sourceAdapter.notifyDataSetChanged()
+
+                        // Tell the MainActivity that our sources have changed
+                        val refreshIntent = Intent(MainActivity.INTENT_REFRESH_LIST)
+                        sendBroadcast(refreshIntent)
                     })
                     .setNegativeButton(android.R.string.cancel, null)
                     .show()
-            true
+            true // needed because OnItemLongClickListener is a boolean
         }
     }
 
@@ -63,21 +72,21 @@ class EditSourceActivity : AppCompatActivity() {
                 .setTitle(getString(R.string.enter_url))
                 .setView(urlBox)
                 .setPositiveButton(android.R.string.ok, { dialogInterface, i ->
-                    ValidateURL(this@EditSourceActivity, sharedPrefHelper).execute(urlBox.text.toString())
+                    ValidateURL(this@EditSourceActivity, sharedPrefHelper, urlBox.text.toString(), sourceAdapter).execute()
                 })
                 .setNegativeButton(android.R.string.cancel, null)
                 .show()
     }
 
-    class ValidateURL(val ctx: Context, val sharedPrefHelper: SharedPrefHelper) : AsyncTask<String, Void, Int>() {
+    class ValidateURL(val ctx: Context, val sharedPrefHelper: SharedPrefHelper, val urlToValidate: String, val sourceListAdapter: EditSourceAdapter) : AsyncTask<Void, Void, Int>() {
         val VALID_URL = 0
         val INVALID_URL = 1
         val INVALID_RSS = 2
 
-        override fun doInBackground(vararg params: String?): Int {
+        override fun doInBackground(vararg params: Void?): Int? {
             val url: URL
             try {
-                url = URL(params[0])
+                url = URL(urlToValidate)
                 SyndFeedInput().build(XmlReader(url)) // test parsing to see if successful
 
             } catch (e: MalformedURLException) {
@@ -98,6 +107,15 @@ class EditSourceActivity : AppCompatActivity() {
             super.onPostExecute(result)
             if (result != null && result != VALID_URL) {
                 showErrorDialog(result)
+            } else {
+                sharedPrefHelper.addURLToSourceList(URL(urlToValidate))
+
+                // refresh our source list
+                sourceListAdapter.notifyDataSetChanged()
+
+                // Tell the MainActivity that our sources have changed
+                val refreshIntent = Intent(MainActivity.INTENT_REFRESH_LIST)
+                ctx.sendBroadcast(refreshIntent)
             }
         }
 

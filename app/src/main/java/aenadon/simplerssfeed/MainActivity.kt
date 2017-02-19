@@ -1,8 +1,10 @@
 package aenadon.simplerssfeed
 
 import android.app.ProgressDialog
+import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.net.Uri
 import android.os.AsyncTask
 import android.os.Bundle
@@ -19,9 +21,18 @@ import java.net.URL
 import java.util.*
 
 
+
+
 class MainActivity : AppCompatActivity() {
 
+    companion object {
+        val INTENT_REFRESH_LIST = "INTENT_REFRESH_LIST"
+    }
+
     lateinit var feedList: ListView
+
+    // makes sure to refresh our list after sources have been edited
+    var refreshReceiver: BroadcastReceiver? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,35 +42,59 @@ class MainActivity : AppCompatActivity() {
 
         feedList = findViewById(aenadon.simplerssfeed.R.id.content_main) as ListView
 
-        val sharedPrefHelper = SharedPrefHelper(this@MainActivity)
-
         if (lastCustomNonConfigurationInstance != null) {
-            // if it was just an orientation change, set the old adapter+clicklistener again
+            // if it was just an orientation change, set the old sourceListAdapter+clicklistener again
             val oldObjects = lastCustomNonConfigurationInstance as ListViewPersistence
             feedList.adapter = oldObjects.newsAdapter
             feedList.onItemClickListener = oldObjects.clickListener
         } else {
             // if it was more than an orientation change, go through
             // all the steps needed to get saved list of sources
-            val feedSources = sharedPrefHelper.getSourcesFromPrefs()
-
-            if (feedSources.isNotEmpty()) {
-                GetXML(this@MainActivity, feedSources.size, feedList).execute(feedSources)
-            } else {
-                // if no sources specified, no need to do anything except informing the user
-                Toast.makeText(this@MainActivity, getString(R.string.message_no_sources_title), Toast.LENGTH_LONG).show()
-
-                AlertDialog.Builder(this)
-                        .setTitle(getString(R.string.message_no_news_title))
-                        .setMessage(getString(R.string.message_no_news_text))
-                        .setPositiveButton(android.R.string.ok, null)
-                        .show()
-            }
+            populateList()
         }
     }
 
+    fun populateList() {
+        val sharedPrefHelper = SharedPrefHelper(this@MainActivity)
+        val feedSources = sharedPrefHelper.getSourcesFromPrefs()
+
+        if (feedSources.isNotEmpty()) {
+            GetXML(this@MainActivity, feedSources.size, feedList).execute(feedSources)
+        } else {
+            // if no sources specified, no need to do anything except informing the user
+            Toast.makeText(this@MainActivity, getString(R.string.message_no_sources_title), Toast.LENGTH_LONG).show()
+
+            AlertDialog.Builder(this)
+                    .setTitle(getString(R.string.message_no_news_title))
+                    .setMessage(getString(R.string.message_no_news_text))
+                    .setPositiveButton(android.R.string.ok, null)
+                    .show()
+        }
+
+        // receiver to refresh news list if sources were edited
+        val intentFilter = IntentFilter()
+        intentFilter.addAction(INTENT_REFRESH_LIST)
+
+        // if source list has changed, please reload everything
+        refreshReceiver = object : BroadcastReceiver() {
+            override fun onReceive(context: Context, intent: Intent) {
+                populateList()
+            }
+        }
+        registerReceiver(refreshReceiver, intentFilter)
+    }
+
+    override fun onDestroy() {
+        // kill the receiver on activity destruction
+        if (refreshReceiver != null) {
+            unregisterReceiver(refreshReceiver)
+            refreshReceiver = null
+        }
+        super.onDestroy()
+    }
+
     override fun onRetainCustomNonConfigurationInstance(): ListViewPersistence? {
-        // return an object containing the adapter and OnItemClickListener
+        // return an object containing the sourceListAdapter and OnItemClickListener
         // so we can apply these back to the feedList after orientation change
         return ListViewPersistence(feedList.adapter as XMLNewsAdapter, feedList.onItemClickListener)
     }
