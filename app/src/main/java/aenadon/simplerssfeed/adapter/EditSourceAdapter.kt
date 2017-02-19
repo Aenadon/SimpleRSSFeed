@@ -1,4 +1,4 @@
-package aenadon.simplerssfeed
+package aenadon.simplerssfeed.adapter
 
 import android.annotation.SuppressLint
 import android.content.Context

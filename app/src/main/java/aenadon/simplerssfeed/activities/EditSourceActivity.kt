@@ -1,5 +1,8 @@
-package aenadon.simplerssfeed
+package aenadon.simplerssfeed.activities
 
+import aenadon.simplerssfeed.R
+import aenadon.simplerssfeed.adapter.EditSourceAdapter
+import aenadon.simplerssfeed.utils.SharedPrefHelper
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -58,8 +61,6 @@ class EditSourceActivity : AppCompatActivity() {
             true // needed because OnItemLongClickListener is a boolean
         }
     }
-
-
 
     @Suppress("unused") // this function is assigned as onClick handler in the layout XML
     fun addSource(view: View) {

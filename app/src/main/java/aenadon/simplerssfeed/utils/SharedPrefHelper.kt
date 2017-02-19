@@ -1,11 +1,11 @@
-package aenadon.simplerssfeed
+package aenadon.simplerssfeed.utils
 
 import android.content.Context
 import android.content.SharedPreferences
 import java.net.URL
 import java.util.*
 
-class SharedPrefHelper(val ctx: Context) {
+class SharedPrefHelper(ctx: Context) {
     val FEED_SOURCES_FILENAME = "FEED_SOURCES"
     val FEED_SOURCES_KEY = "FEED_LIST"
     val FIRST_LAUNCH_KEY = "FIRST_LAUNCH"

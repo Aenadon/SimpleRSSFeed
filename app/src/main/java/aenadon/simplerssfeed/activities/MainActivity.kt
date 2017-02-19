@@ -1,5 +1,9 @@
-package aenadon.simplerssfeed
+package aenadon.simplerssfeed.activities
 
+import aenadon.simplerssfeed.R
+import aenadon.simplerssfeed.adapter.XMLNewsAdapter
+import aenadon.simplerssfeed.models.XMLItem
+import aenadon.simplerssfeed.utils.SharedPrefHelper
 import android.app.ProgressDialog
 import android.content.BroadcastReceiver
 import android.content.Context
@@ -21,9 +25,6 @@ import com.rometools.rome.io.XmlReader
 import java.net.URL
 import java.util.*
 
-
-
-
 class MainActivity : AppCompatActivity() {
 
     companion object {
@@ -41,7 +42,7 @@ class MainActivity : AppCompatActivity() {
         val toolbar = findViewById(R.id.toolbar) as Toolbar
         setSupportActionBar(toolbar)
 
-        feedList = findViewById(aenadon.simplerssfeed.R.id.content_main) as ListView
+        feedList = findViewById(R.id.content_main) as ListView
 
         if (lastCustomNonConfigurationInstance != null) {
             // if it was just an orientation change, set the old sourceListAdapter+clicklistener again

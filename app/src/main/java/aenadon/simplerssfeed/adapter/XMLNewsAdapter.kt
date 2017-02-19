@@ -1,5 +1,7 @@
-package aenadon.simplerssfeed
+package aenadon.simplerssfeed.adapter
 
+import aenadon.simplerssfeed.R
+import aenadon.simplerssfeed.models.XMLItem
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater

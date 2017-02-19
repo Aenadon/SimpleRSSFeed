@@ -1,4 +1,4 @@
-package aenadon.simplerssfeed
+package aenadon.simplerssfeed.models
 
 import java.net.URL
 import java.util.*
