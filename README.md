@@ -18,7 +18,7 @@ Unix: `./gradlew assembleRelease`
 
 ## License
 
-# Rome
+### Rome
 
 
    Copyright 2017 Rometools
